@@ -25,33 +25,57 @@ for filename in os.listdir(files):
 # set empty df and create index column
 df = pd.DataFrame(columns=['Observation Time'])
 
+# EXPANDED VERSION
+# # loop over data directory and merge all the resulting csvs into df
+# for filename in os.listdir(cleanfiles):
+#     f = os.path.join(cleanfiles, filename)
+#
+#     with open(f, "r") as file:
+#         filename = pd.read_csv(file)
+#         df = df.merge(filename, how="outer",  left_on=['Observation Time'], right_on=['Observation Time']
+#                       )
+
+# # keep only the '_x' suffix columns if there are repeats. There will LIKELY be repeats, as some unknown number of the station groups have overlapping stations / measures
+# df.columns = df.columns.str.replace("_x", "")
+# df = df[df.columns.drop(list(df.filter(regex='_y$')))]
+
+# # drop duplicate columns and rows
+# df = df.loc[:,~df.columns.duplicated()]
+# df = df.drop_duplicates(keep='first')
+
+# # convert observation time to datetime and sort ascending
+# df['Observation Time'] = pd.to_datetime(df['Observation Time'])
+# df = df.sort_values(by=['Observation Time'])
+
+# drop rows with no data at all other than Observation Time
+# dfheaders = df.columns.values.tolist()
+# dfheaders = dfheaders[1:]
+# df.dropna(how='all', subset=dfheaders, inplace=True)
+
+# df_filename = 'data/aqi_data.csv'
+
+# STACKED VERSION (seaborn wants this)
 # loop over data directory and merge all the resulting csvs into df
 for filename in os.listdir(cleanfiles):
     f = os.path.join(cleanfiles, filename)
 
     with open(f, "r") as file:
         filename = pd.read_csv(file)
-        df = df.merge(filename, how="outer",  left_on=['Observation Time'], right_on=['Observation Time']
-                      )
+        dfheaders = filename.columns.values.tolist()
+        dfheaders = dfheaders[1:]
+        dftemp = pd.DataFrame(columns=['Observation Time', 'value', 'measure'])
+        for header in dfheaders:
+            tempdf = filename[['Observation Time', header]]
+            tempdf['measure'] = header
+            tempdf = tempdf.rename(columns = {header:'value'})
+            dftemp = pd.concat([dftemp,tempdf])
+        df = pd.concat([df,dftemp])
 
-# keep only the '_x' suffix columns if there are repeats. There will LIKELY be repeats, as some unknown number of the station groups have overlapping stations / measures
-df.columns = df.columns.str.replace("_x", "")
-df = df[df.columns.drop(list(df.filter(regex='_y$')))]
-
-# drop duplicate columns and rows
-df = df.loc[:,~df.columns.duplicated()]
+# drop duplicate rows (else you get all the headers repeated)
 df = df.drop_duplicates(keep='first')
+df = df.dropna()
 
-# convert observation time to datetime and sort ascending
-df['Observation Time'] = pd.to_datetime(df['Observation Time'])
-df = df.sort_values(by=['Observation Time'])
-
-# drop rows with no data at all other than Observation Time
-dfheaders = df.columns.values.tolist()
-dfheaders = dfheaders[1:]
-df.dropna(how='all', subset=dfheaders, inplace=True)
-
-df_filename = 'data/aqi_data.csv'
+df_filename = 'data/aqi_data_stacked.csv'
 
 print("exporting " + df_filename)
 df.to_csv(df_filename, index=False, quotechar='"', quoting=csv.QUOTE_ALL)
