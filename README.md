@@ -15,6 +15,10 @@ Project studying the geography of wildfire smoke in the Puget Sound region.
   - Aggregated datafile produced by _data_clean.py_. _NOT INCLUDED IN REPO_ for size reasons.
 - _/data/aqi_data_stacked.csv_:
   - Disaggregated datafile produced by _data_clean.py_. _NOT INCLUDED IN REPO_ for size reasons.
+- _purpleair_fetch.py_:
+  - Fetches list of stations from PurpleAir within Puget Sound
+- _api_key_sample.txt_:
+  - Required input for _purpleair_fetch.py_ Your PurpleAir API GET key goes here in the first line, just raw text, no wrappers.
 
 ### Data source
 We're starting with an initial dataset of AQI data from the [Puget Sound Clean Air Agency](https://pscleanair.gov/154/Air-Quality-Data).
