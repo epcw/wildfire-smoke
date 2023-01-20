@@ -135,3 +135,4 @@ data/cleaned/*
 .idea/
 /data/aqi_data_stacked.csv
 /data/aqi_data.csv
+/api_key.txt
