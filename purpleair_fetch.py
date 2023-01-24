@@ -1,7 +1,7 @@
 import requests
 import json
 import pandas as pd
-import time
+from datetime import datetime
 from time import sleep
 
 # NOTE to calculate AQI from sensor data = https://community.purpleair.com/t/how-to-calculate-the-us-epa-pm2-5-aqi/877
@@ -50,7 +50,7 @@ for index, row in df.iterrows():
     name = row['name']
 
     print('Sensor: ' + str(name) + ' (' + str(sensor) + ')')
-    print('Active from ' +str(created) + 'to ' + str(ended) + '\n    ____________')
+    print('Active from ' +str(datetime.fromtimestamp(created).date()) + ' to ' + str(datetime.fromtimestamp(ended).date()) + '\n    ____________')
 
     # Start at the created date, then pull one year at a time until you hit today
     for x in range(created, ended, unix_year):
