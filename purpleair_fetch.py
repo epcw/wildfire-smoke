@@ -60,7 +60,7 @@ for index, row in df.iterrows():
         else:
             end_timestamp = ended
 
-        # NOW PUT THE URL PULL IN HERE, AND ADD THE SLEEP
+        # construct URL for API pull
         hist_url = 'https://api.purpleair.com/v1/sensors/' + str(sensor) + '/history?start_timestamp=' + str(start_timestamp) + '&end_timestamp=' + str(end_timestamp) + '&average=1440&fields=pm2.5_alt%2C%20pm2.5_alt_a%2C%20pm2.5_alt_b%2C%20pm2.5_atm%2C%20pm2.5_atm_a%2C%20pm2.5_atm_b%2C%20pm2.5_cf_1%2C%20pm2.5_cf_1_a%2C%20pm2.5_cf_1_b'
 
         # request from API
