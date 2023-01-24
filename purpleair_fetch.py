@@ -42,6 +42,8 @@ unix_year = 31556926
 # create empty dataframe outside loop to take data
 hist_df = pd.DataFrame()
 
+hist_filename = 'data/pa_hist_data.csv'
+
 # loop over sensors
 for index, row in df.iterrows():
     sensor = row['sensor_index']
@@ -82,12 +84,11 @@ for index, row in df.iterrows():
         # append to the bottom of hist_df
         hist_df = pd.concat([hist_df, temp_df])
 
+        # remove all the duplicate column heading rows (this works ASSUMING that all temp_dfs are exactly the same shape and pull the same data in the same order.  Be careful changing the loop above.
+        hist_df = hist_df.drop_duplicates(keep='first')
+
+        # dump to csv
+        hist_df.to_csv(hist_filename, mode='a')
+
         # API guidelines is hit once every 1-10min, so setting at just over a minute
         sleep(62)
-
-# remove all the duplicate column heading rows (this works ASSUMING that all temp_dfs are exactly the same shape and pull the same data in the same order.  Be careful changing the loop above.
-hist_df = hist_df.drop_duplicates(keep='first')
-
-# dump to csv
-hist_filename = 'data/pa_hist_data.csv'
-hist_df.to_csv(hist_filename)
