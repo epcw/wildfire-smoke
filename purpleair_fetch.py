@@ -47,8 +47,9 @@ for index, row in df.iterrows():
     sensor = row['sensor_index']
     created = row['date_created']
     ended = row['last_seen']
+    name = row['name']
 
-    print('Sensor: ' + str(sensor))
+    print('Sensor: ' + str(name) + ' (' + str(sensor) + ')')
     print('Active from ' +str(created) + 'to ' + str(ended) + '\n    ____________')
 
     # Start at the created date, then pull one year at a time until you hit today
@@ -79,7 +80,7 @@ for index, row in df.iterrows():
         temp_df.insert(0,'station_index',sensor)
 
         # append to the bottom of hist_df
-        pd.concat([hist_df, temp_df])
+        hist_df = pd.concat([hist_df, temp_df])
 
         # API guidelines is hit once every 1-10min, so setting at just over a minute
         sleep(62)
