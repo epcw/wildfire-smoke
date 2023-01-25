@@ -133,7 +133,5 @@ data/raw/*
 data/cleaned/*
 
 .idea/
-/data/aqi_data_stacked.csv
-/data/aqi_data.csv
+/data/*.csv
 /api_key.txt
-/data/pa_station_list.csv

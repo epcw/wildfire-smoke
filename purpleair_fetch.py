@@ -22,27 +22,34 @@ SElng = -121.7631845
 
 url = 'https://api.purpleair.com/v1/sensors?fields=pm2.5_24hour,name,latitude,longitude,altitude,date_created,last_seen&max_age=0&modified_since=0&location_type=0&nwlng=' + str(NWlng) + '&nwlat='+ str(NWlat) + '&selng=' + str(SElng) + '&selat=' + str(SElat)
 
-response = requests.get(url, headers=headers)
-print(url)
-print("Getting list of stations, Status Code: ", response.status_code)
+# create empty dataframe outside loop to take data
+hist_df = pd.DataFrame(columns=['','station_index','time_stamp','pm2.5_alt','pm2.5_alt_a','pm2.5_alt_b','pm2.5_atm','pm2.5_atm_a','pm2.5_atm_b','pm2.5_cf_1','pm2.5_cf_1_a','pm2.5_cf_1_b'])
+hist_filename = 'data/pa_hist_data.csv'
 
-content = json.loads(response.content)
-data = content["data"]
-columns = content["fields"]
+# STATION LIST LOOP - COMMENT OUT IF RESTARTING
+# response = requests.get(url, headers=headers)
+# print(url)
+# print("Getting list of stations, Status Code: ", response.status_code)
+#
+# content = json.loads(response.content)
+# data = content["data"]
+# columns = content["fields"]
+#
+# station_list = 'data/pa_station_list.csv'
+#
+# df = pd.DataFrame(data, columns=columns)
+# df.to_csv(station_list)
+#
+# COMMENT OUT IF ADDING TO EXISTING
+# hist_df.to_csv(hist_filename)
 
-station_list = 'data/pa_station_list.csv'
-
-df = pd.DataFrame(data, columns=columns)
-df.to_csv(station_list)
+# LOAD STATION LIST (if not fetching, as when restarting script)
+station_filename = 'data/pa_station_list-1.csv'
+df = pd.read_csv(station_filename)
 
 # needed to walk the url request year by year
 unix_year = 31556926
 # today = int(time.time()) # kinda redundant now that I'm only pulling to end date
-
-# create empty dataframe outside loop to take data
-hist_df = pd.DataFrame()
-
-hist_filename = 'data/pa_hist_data.csv'
 
 # loop over sensors
 for index, row in df.iterrows():
@@ -51,8 +58,8 @@ for index, row in df.iterrows():
     ended = row['last_seen']
     name = row['name']
 
-    print('Sensor: ' + str(name) + ' (' + str(sensor) + ')')
-    print('Active from ' +str(datetime.fromtimestamp(created).date()) + ' to ' + str(datetime.fromtimestamp(ended).date()) + '\n    ____________')
+    print('Sensor: ',name,' (',sensor,')')
+    print('Active from ', datetime.fromtimestamp(created).date(),' to ',datetime.fromtimestamp(ended).date())
 
     # Start at the created date, then pull one year at a time until you hit today
     for x in range(created, ended, unix_year):
@@ -67,28 +74,54 @@ for index, row in df.iterrows():
 
         # request from API
         hist_response = requests.get(hist_url, headers=headers)
+        print('Status code: ', hist_response.status_code,'\n    ____________')
 
-        # read hist_response
-        hist_content = json.loads(hist_response.content)
+        try:
+            # read hist_response
+            hist_content = json.loads(hist_response.content)
 
-        # pull out data & field names
-        hist_data = hist_content["data"]
-        hist_columns = hist_content["fields"]
+            # pull out data & field names
+            hist_data = hist_content["data"]
+            hist_columns = hist_content["fields"]
 
-        # dump to dataframe
-        temp_df = pd.DataFrame(hist_data, columns=hist_columns)
+            # dump to dataframe
+            temp_df = pd.DataFrame(hist_data, columns=hist_columns)
 
-        # add in station_index
-        temp_df.insert(0,'station_index',sensor)
+            # add in station_index
+            temp_df.insert(0,'station_index',sensor)
 
-        # append to the bottom of hist_df
-        hist_df = pd.concat([hist_df, temp_df])
+            # append to the bottom of hist_df
+            hist_df = pd.concat([hist_df, temp_df])
 
-        # remove all the duplicate column heading rows (this works ASSUMING that all temp_dfs are exactly the same shape and pull the same data in the same order.  Be careful changing the loop above.
-        hist_df = hist_df.drop_duplicates(keep='first')
+            # dump to csv
+            hist_df.to_csv(hist_filename, mode='a')
+        except:
+            try:
+                # read hist_response
+                hist_content = json.loads(hist_response.content)
 
-        # dump to csv
-        hist_df.to_csv(hist_filename, mode='a')
+                # pull out data & field names
+                hist_data = hist_content["data"]
+                hist_columns = hist_content["fields"]
+
+                # dump to dataframe
+                temp_df = pd.DataFrame(hist_data, columns=hist_columns)
+
+                # add in station_index
+                temp_df.insert(0, 'station_index', sensor)
+
+                # append to the bottom of hist_df
+                hist_df = pd.concat([hist_df, temp_df])
+
+                # dump to csv
+                hist_df.to_csv(hist_filename, mode='a')
+            except:
+                print(sensor + ": API response failed")
 
         # API guidelines is hit once every 1-10min, so setting at just over a minute
         sleep(62)
+
+hist_df = pd.read_csv(hist_filename)
+# remove all the duplicate column heading rows (this works ASSUMING that all temp_dfs are exactly the same shape and pull the same data in the same order.  Be careful changing the loop above.
+hist_df = hist_df.drop_duplicates(keep='first')
+hist_df.to_csv(hist_filename)
