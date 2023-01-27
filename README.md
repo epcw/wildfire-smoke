@@ -23,7 +23,6 @@ Project studying the geography of wildfire smoke in the Puget Sound region.
 ### Data source
 We're starting with an initial dataset of AQI data from the [Puget Sound Clean Air Agency](https://pscleanair.gov/154/Air-Quality-Data).
 
-
 ### Principal researchers
 Richard W. Sharp\
 Patrick W. Zimmerman
@@ -36,4 +35,5 @@ csv\
 os\
 pandas\
 seaborn\
-matplotlib
+matplotlib\
+fastparquet
