@@ -134,4 +134,5 @@ data/cleaned/*
 
 .idea/
 /data/*.csv
+/data/*.parquet
 /api_key.txt
