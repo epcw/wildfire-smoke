@@ -151,3 +151,12 @@ cleaned_filename = 'data/pa_hist_data_cleaned.parquet'
 
 print('Writing ' + cleaned_filename)
 pw(cleaned_filename, hist_df, compression='GZIP')
+
+# remove all the duplicate column heading rows (this works ASSUMING that all temp_dfs are exactly the same shape and pull the same data in the same order.  Be careful changing the loop above.
+print('Extracting averages')
+avg_df = hist_df[['station_index','time_stamp','pm2.5_AVG']]
+
+avg_filename = 'data/pa_hist_data_avg.parquet'
+
+print('Writing ' + avg_filename)
+pw(avg_filename, avg_df, compression='GZIP')

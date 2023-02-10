@@ -136,3 +136,4 @@ data/cleaned/*
 /data/*.csv
 /data/*.parquet
 /api_key.txt
+/notebooks/
