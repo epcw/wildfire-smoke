@@ -15,6 +15,10 @@ Project studying the geography of wildfire smoke in the Puget Sound region.
   - Aggregated datafile produced by _data_clean.py_. _NOT INCLUDED IN REPO_ for size reasons.
 - _/data/aqi_data_stacked.csv_:
   - Disaggregated datafile produced by _data_clean.py_. _NOT INCLUDED IN REPO_ for size reasons.
+- _/data/pa_hist_data.csv_,_pa_data_cleaned.parquet_,_pa_hist_data_avg.parquet_:
+  - Datafiles produced by _purpleair_fetch.py_. _NOT INCLUDED IN REPO_ for size reasons.
+- _/data/shape/_:
+  - Directory with all the elevation shapefiles. _NOT INCLUDED IN REPO_ for size reasons.
 - _purpleair_fetch.py_:
   - Fetches list of stations from PurpleAir within Puget Sound and pulls historical data, saving as _pa_hist_data_avg.parquet_
 - _api_key_sample.txt_:
