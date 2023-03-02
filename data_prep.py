@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 from fastparquet import ParquetFile as pf
 from fastparquet import write as pw
-import seaborn as sns
+# import seaborn as sns
 import os
 os.environ['USE_PYGEOS'] = '0'
 import geopandas as gpd
@@ -72,6 +72,9 @@ gplt.pointplot(
 ccrs.PlateCarree()
 
 seattle_contours = gpd.read_file('data/shape/Elev_Contour.shp')
+
+with open('map/seattle_contours.geojson', 'w') as file:
+    file.write(seattle_contours.to_json())
 
 seattle_contours.plot(ax=ax, alpha=0.1)
 
