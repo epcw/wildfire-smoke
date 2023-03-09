@@ -29,7 +29,7 @@ Project studying the geography of wildfire smoke in the Puget Sound region.
   - output map produced by _data_prep.py_
 - _index.html_:
   - Webpage for viz goes here.
-- _/map/:
+- _/map/_:
   - Directory with all the vizualization pieces.
 - _/map/aqi.js_:
   - d3 script that creates the vizualization
