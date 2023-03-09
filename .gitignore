@@ -140,3 +140,9 @@ data/cleaned/*
 /data/shape/*
 /map/jquery.3.5.1.min.js
 /map/seattle_contours.geojson
+/map/koppen.js
+/map/seattle_contours.json
+/map/seattle_contours (1).json
+/map/seattle_contours_simplified.json
+/map/stations.csv
+/map/filtered_seattle_contours.json
