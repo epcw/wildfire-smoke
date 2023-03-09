@@ -27,6 +27,20 @@ Project studying the geography of wildfire smoke in the Puget Sound region.
   - Produces map of Purple Air AQI data, using _/data/pa_hist_data_avg.parquet_ and _data/shape/Elev_Contour.shp_ as required inputs.  
 - _AQI_map_contour.png_:
   - output map produced by _data_prep.py_
+- _index.html_:
+  - Webpage for viz goes here.
+- _/map/:
+  - Directory with all the vizualization pieces.
+- _/map/aqi.js_:
+  - d3 script that creates the vizualization
+- _/map/aqi.css_:
+  - css to style the map and index page.
+- _/map/filtered_seattle_contours.json_:
+  - contour map file.  Created with the shapefiles above in [mapshaper.org](https://mapshaper.org/) and exported as a topoJson.  _NOT INCLUDED IN REPO_ for size reasons.
+- _/map/jquery.3.5.1.min.js_:
+  - need to host jquery for page interactivity.  Or you could probably import it in the html file, but this works, too.
+- _/map/stations.csv_:
+  - data source for the stations to be used in the map (derived from _pa_hist_data_avg.parquet_).  _NOT INCLUDED IN REPO_ for size reasons.
 
 ### Data source
 We're starting with an initial dataset of AQI data from the [Puget Sound Clean Air Agency](https://pscleanair.gov/154/Air-Quality-Data) and combining it with a historical scrape of public Purple Air stations ([API reference](https://api.purpleair.com/#api-sensors-get-sensor-history)) from 2017-onwards.  Elevation contour files are from the USGS's [National Map](https://www.sciencebase.gov/catalog/item/4f70ab22e4b058caae3f8deb).
@@ -36,7 +50,8 @@ Richard W. Sharp\
 Patrick W. Zimmerman
 
 #### Codebase
-**Data prep**: Python 3.10
+**Data prep & initial analysis**: Python 3.10\
+**Vizualization**: D3.js v4
 
 #### Python Package requirements (as well as all their dependencies)
 csv\
@@ -50,3 +65,9 @@ datetime\
 geopandas\
 geoplot\
 cartopy
+
+#### Javascript libraries to import in _index.html_
+d3.v4\
+d3-contour\
+d3-delaunay\
+topojson
