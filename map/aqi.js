@@ -4,11 +4,11 @@ var margin = {top: 20, right: 30, bottom: 30, left: 40},
     h = 1101;
 
 // set-up unit projection and path
-const projection = d3.geo.mercator()
+const projection = d3.geoMercator()
     .scale(1)
     .translate([0, 0]);
 
-var path = d3.geo.path()
+var path = d3.geoPath()
     .projection(projection);
 
 // append the svg object to the body of the page
@@ -18,48 +18,37 @@ var svg = d3.select("#mapdiv")
     .attr("width", w + margin.left + margin.right)
     .attr("height", h + margin.top + margin.bottom);
 
+// create contour layer
 svg.append("g")
     .attr("id", "contour_map")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")")
+    // create background rect
     .append("rect")
     .attr("id","basemap");
 
+// create stations layer
 svg.append("g")
     .attr("id","stations")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
 // set-up scale for colour coding contours
-var cScale = d3.scale.linear()
+var cScale = d3.scaleLinear()
     .domain([0, 1]);
 
-const max_lat = 48
-const min_lon = -123
-const min_lat = 47
-const max_lon = -122
+// bounds of the station data - possibly irrelevant and not getting used right now anyways
+//const max_lat = 48
+//const min_lon = -123
+//const min_lat = 47
+//const max_lon = -122
 
-var time_stamp = 1672617600
+// this is where the timestamp slider function and whatnot goes.
+//var time_stamp = 1672617600
 
-
-// load the station data
+// load the station data and map it onto the existing projection defined above
 function stations() {
 d3.csv("/aqi/map/stations.csv", function(data) {
-
-//    var x = d3.scaleLinear()
-//    .domain([min_lon, max_lon])
-//    .range([0, width]);
-//
-//    var y = d3.scaleLinear()
-//    .domain([min_lat,max_lat])
-//    .range([height,0]);
-//    var mapwidth = d3.select("#contour_map").node().getBBox().width;
-//    var mapheight = d3.select("#contour_map").node().getBBox().height;
-//
-//    var colors = d3.scale.linear()
-//    .domain([0,50,150])
-//    .range(["green","yellow","red"])
-
 
     svg.select("g#stations")
     .append("g")
@@ -73,10 +62,14 @@ d3.csv("/aqi/map/stations.csv", function(data) {
     .style("fill", function(d) { var aqi = d.pm2_5_AVG; return colorize(aqi)})
     .style("stroke", "#2e2e2e")
     .style("stroke-width", "1")
+    .on("mouseover", highlight)
+    .on("mouseout", function (d,i) {unhighlight(this,d);
+    })
 
 });
-
 }
+
+// function to assign AQI colors per EPA's colorscale
 function colorize (aqi) {
 
     if (aqi < 5) {
@@ -97,12 +90,14 @@ function colorize (aqi) {
     else if (aqi >= 30 && aqi < 50) {
         color = "#800000"
         }
+    // I THINK AQIs above 500 are impossible since it's a 0-500 scale, but just in case there's a weird data blurp, make them black.
     else {
         color = "#000000"
         }
     return color
 }
 
+// Make me a contour map WORTHY of Mordor (aka main drawing script)
 d3.json("/aqi/map/filtered_seattle_contours.json", function(error, puget_sound) {
   if (error) return console.error(error);
 
@@ -131,10 +126,9 @@ d3.json("/aqi/map/filtered_seattle_contours.json", function(error, puget_sound) 
         .style("stroke", function(d, i) {
             return interp(cScale(d.properties.ContourEle));
         })
-        .attr("d", path)
-        .on("mouseover", highlight) // just a little example of what's available in terms of interaction
-        .on("mouseout", function (d,i) {unhighlight(this,d);
-        });
+        .attr("d", path);
+
+    // creates placeholder blue rect instead of a real basemap
 
     var mapwidth = d3.select("#contour_map").node().getBBox().width;
     var mapheight = d3.select("#contour_map").node().getBBox().height;
@@ -146,15 +140,12 @@ d3.json("/aqi/map/filtered_seattle_contours.json", function(error, puget_sound) 
           "translate(140,28)")
         .attr("fill","#D6EAFF");
 
+    // now add stations: this ensures they get added AFTER the contour map's dimensions are created, since we're mapping the stations onto its lat/lon
         stations();
 });
 
-//d3.timeout(stations, 10000);
-
 // function to interpolate between two colours
 // see http://stackoverflow.com/questions/12217121/continuous-color-scale-from-discrete-domain-of-strings
-
-
 function interp(x) {
     var ans = d3.interpolateLab("#ffffe5", "#004529")(x);
     return ans
@@ -164,15 +155,21 @@ function highlight(x) {
 
     var s = d3.select(this);
 
-    s.style("stroke", "#660066");
+    s.attr("r", 15)
+    .style("stroke", "#39ff14")
+    .style("stroke-width","5");
 
+    s.raise();
 }
 function unhighlight(x,y) {
 
-    var old = y.properties.ELEV;
+//    var old = y.properties.ContourEle; // not using right now, legacy from the contour coloring
     var u = d3.select(x);
 
-    u.style("stroke", function(d, i) {
-            return interp(cScale(old));
-        })
+//    u.style("stroke", function(d, i) {
+//            return interp(cScale(old));
+//        })
+      u.attr("r", 5)
+      .style("stroke","#2e2e2e")
+      .style("stroke-width",1);
 }
