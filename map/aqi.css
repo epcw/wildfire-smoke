@@ -171,11 +171,12 @@ g#voronoi {
 }
 
 /* shadow trick from bl.ocks.org */
-#tooltip, #tooltipdetail, #tooltipcode {
-  font-size: 8pt;
+#tooltip, #tooltip2, #tooltip3 {
+  font-size: 12pt;
   font-weight: 700;
   fill: white;
   text-shadow: 1px 1px 0 #252525, 1px -1px 0 #252525, -1px 1px 0 #252525, -1px -1px 0 #252525;
+  color:white;
 }
 
 /*HTML page styling*/

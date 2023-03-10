@@ -11,6 +11,11 @@ const projection = d3.geoMercator()
 var path = d3.geoPath()
     .projection(projection);
 
+// tooltip div
+d3.select('body').append('div').attr('id', 'tooltip').attr('style', 'position: absolute; opacity: 0;');
+d3.select('body').append('div').attr('id', 'tooltip2').attr('style', 'position: absolute; opacity: 0;');
+d3.select('body').append('div').attr('id', 'tooltip3').attr('style', 'position: absolute; opacity: 0;');
+
 // append the svg object to the body of the page
 var svg = d3.select("#mapdiv")
   .append("svg")
@@ -44,7 +49,15 @@ var cScale = d3.scaleLinear()
 //const max_lon = -122
 
 // this is where the timestamp slider function and whatnot goes.
-//var time_stamp = 1672617600
+function time_convert (time_stamp) {
+// initialize new Date object
+var date_ob = new Date(time_stamp * 1000);
+var year = date_ob.getFullYear();
+var month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+var day = ("0" + date_ob.getDate()).slice(-2);
+var date_human = (year + "-" + month + "-" + day)
+return date_human
+}
 
 // load the station data and map it onto the existing projection defined above
 function stations() {
@@ -62,10 +75,31 @@ d3.csv("/aqi/map/stations.csv", function(data) {
     .style("fill", function(d) { var aqi = d.pm2_5_AVG; return colorize(aqi)})
     .style("stroke", "#2e2e2e")
     .style("stroke-width", "1")
-    .on("mouseover", highlight)
-    .on("mouseout", function (d,i) {unhighlight(this,d);
-    })
+    .on("mouseover", function(d) {
+//        highlight();
+        var s = d3.select(this);
 
+    s.attr("r", 15)
+    .style("stroke", "#39ff14")
+    .style("stroke-width","5");
+
+    s.raise();
+        var station = d.name; var index = d.station_index; var aqi = d.pm2_5_AVG; var date = d.time_stamp;
+        d3.select('#tooltip').transition().duration(200).style('opacity', 1).text(station + " (" + index + ")");
+        d3.select('#tooltip2').transition().duration(200).style('opacity', 1).text(time_convert(date));
+        d3.select('#tooltip3').transition().duration(200).style('opacity', 1).text("AQI: " + aqi);
+    })
+    .on("mouseout", function (d,i) {
+    unhighlight(this,d);
+       d3.select('#tooltip').style('opacity', 0);
+       d3.select('#tooltip2').style('opacity', 0);
+       d3.select('#tooltip3').style('opacity', 0);
+    })
+   .on('mousemove', function() {
+   d3.select('#tooltip').style('left', (d3.event.pageX+10) + 'px').style('top', (d3.event.pageY+10) + 'px');
+      d3.select('#tooltip2').style('left', (d3.event.pageX+10) + 'px').style('top', (d3.event.pageY+25) + 'px');
+         d3.select('#tooltip3').style('left', (d3.event.pageX+10) + 'px').style('top', (d3.event.pageY+40) + 'px');
+     })
 });
 }
 
