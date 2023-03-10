@@ -177,6 +177,12 @@ g#voronoi {
   fill: white;
   text-shadow: 1px 1px 0 #252525, 1px -1px 0 #252525, -1px 1px 0 #252525, -1px -1px 0 #252525;
   color:white;
+  width: 300px;
+  text-align: left;
+}
+@media only screen and (max-width:768px) {
+#tooltip, #tooltip2, #tooltip3 {
+  font-size: 10pt;
 }
 
 /*HTML page styling*/
