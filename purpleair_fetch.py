@@ -16,18 +16,19 @@ headers= {'X-API-Key': api}
 # get list of sensors within lat/long bounding box (defined by NW/SE corners)
 # Port Townsend City Hall
 NWlat = 48.1162201
-NWlng = -122.755863
+# NWlng = -122.755863
+NWlng = -123 # to match up with western border of USGS contour square
 
 # Peak of Mt. Rainier
 SElat = 46.8555182
 SElng = -121.7631845
 
-url = 'https://api.purpleair.com/v1/sensors?fields=pm2.5_24hour,name,latitude,longitude,altitude,date_created,last_seen&max_age=0&modified_since=0&location_type=0&nwlng=' + str(NWlng) + '&nwlat='+ str(NWlat) + '&selng=' + str(SElng) + '&selat=' + str(SElat)
+url = 'https://api.purpleair.com/v1/sensors?fields=pm2.5,name,latitude,longitude,altitude,date_created,last_seen&max_age=0&modified_since=0&location_type=0&nwlng=' + str(NWlng) + '&nwlat='+ str(NWlat) + '&selng=' + str(SElng) + '&selat=' + str(SElat)
 
 # create empty dataframe outside loop to take data
 # hist_df = pd.DataFrame(columns=['','station_index','time_stamp','pm2.5_alt','pm2.5_alt_a','pm2.5_alt_b','pm2.5_atm','pm2.5_atm_a','pm2.5_atm_b','pm2.5_cf_1','pm2.5_cf_1_a','pm2.5_cf_1_b'])
 hist_df = pd.DataFrame(columns=['','station_index','time_stamp','pm2.5_alt','pm2.5_atm','pm2.5_AVG'])
-hist_filename = 'data/pa_hist_data.parquet'
+hist_filename = 'data/pa_hist_data.csv'
 
 # STATION LIST LOOP - COMMENT OUT IF RESTARTING
 response = requests.get(url, headers=headers)
@@ -38,13 +39,14 @@ content = json.loads(response.content)
 data = content["data"]
 columns = content["fields"]
 
-station_list = 'data/pa_station_list.parquet'
+station_list = 'data/pa_station_list.csv'
 
 df = pd.DataFrame(data, columns=columns)
-pw(station_list, df)
+df.to_csv(station_list)
 
 # COMMENT OUT IF ADDING TO EXISTING
-pw(hist_filename, hist_df, compression='GZIP')
+# pw(hist_filename, hist_df, compression='GZIP')
+hist_df.to_csv(hist_filename)
 
 # LOAD STATION LIST (if not fetching, as when restarting script)
 # station_filename = 'data/pa_station_list.parquet'
@@ -80,11 +82,10 @@ for index, row in df.iterrows():
         # request from API
         hist_response = requests.get(hist_url, headers=headers)
         print('Pull from ',datetime.fromtimestamp(start_timestamp).date(),' to ',datetime.fromtimestamp(end_timestamp).date(),'| Status code: ', hist_response.status_code)
-
         try:
             # read hist_response
             hist_content = json.loads(hist_response.content)
-
+            # print(hist_content) #testing
             # pull out data & field names
             hist_data = hist_content["data"]
             hist_columns = hist_content["fields"]
@@ -99,13 +100,14 @@ for index, row in df.iterrows():
             print('Calculating pm2.5 avg')
             temp_df['pm2.5_AVG'] = (temp_df['pm2.5_alt'] + temp_df['pm2.5_atm']) / 2
             print('Rounding to 1 decimal place')
-            temp_df = temp_df.round(1)
+            temp_df = temp_df.round(decimals=1)
 
             # append to the bottom of hist_df
             hist_df = pd.concat([hist_df, temp_df])
 
-            # dump to parquet
-            pw(hist_filename, hist_df, compression='GZIP', append=True)
+            # dump to csv (parquet is better but can't append)
+            hist_df.to_csv(hist_filename, mode='a', header='False')
+            # hist_df.to_parquet(hist_filename, engine='fastparquet', append=True)
         except:
             try:
                 # read hist_response
@@ -125,23 +127,27 @@ for index, row in df.iterrows():
                 print('Calculating pm2.5 avg')
                 temp_df['pm2.5_AVG'] = (temp_df['pm2.5_alt'] + temp_df['pm2.5_atm'])/2
                 print('Rounding to 1 decimal place')
-                temp_df = temp_df.round(1)
+                temp_df = temp_df.round(decimals=1)
 
                 # append to the bottom of hist_df
                 hist_df = pd.concat([hist_df, temp_df])
 
-                # dump to parquet
-                pw(hist_filename, hist_df, compression='GZIP', append=True)
+                # dump to csv(parquet is better but cannot append)
+                hist_df.to_csv(hist_filename, mode='a', header='False')
+                # hist_df.to_parquet(hist_filename, engine='fastparquet', append=True)
 
             except:
-                print(sensor + ": API response failed")
+                print(str(sensor) + ": API response failed")
+                with open('data/failfile.csv','a') as out:
+                    out.write(str(sensor))
 
         # API guidelines is hit once every 1-10min, so setting at just over a minute
         sleep(62)
 
-print('Loading ' + hist_filename)
-parqf = pf(hist_filename)
-hist_df = parqf.to_pandas()
+# only necessary if not scraping
+# print('Loading ' + hist_filename)
+# parqf = pf(hist_filename)
+# hist_df = parqf.to_pandas()
 
 # remove all the duplicate column heading rows (this works ASSUMING that all temp_dfs are exactly the same shape and pull the same data in the same order.  Be careful changing the loop above.
 print('De-duplicating')
