@@ -16,13 +16,23 @@ d3.select('body').append('div').attr('id', 'tooltip').attr('style', 'position: a
 d3.select('body').append('div').attr('id', 'tooltip2').attr('style', 'position: absolute; opacity: 0;');
 d3.select('body').append('div').attr('id', 'tooltip3').attr('style', 'position: absolute; opacity: 0;');
 
+const zoom = d3.zoom()
+    .scaleExtent([1,40])
+    .on("zoom",function () {svg.attr("transform", d3.event.transform)});
+
 // append the svg object to the body of the page
 var svg = d3.select("#mapdiv")
   .append("svg")
     .attr("id","map")
     .attr("width", w + margin.left + margin.right)
-    .attr("height", h + margin.top + margin.bottom);
+    .attr("height", h + margin.top + margin.bottom)
+//    .call(d3.zoom().on("zoom", function () {svg.attr("transform", d3.event.transform)}))
+    .call(zoom)
+    ;
 
+function zoomed({transform}) {
+    g.attr("transform", transform);
+  }
 // create contour layer
 svg.append("g")
     .attr("id", "contour_map")
@@ -59,6 +69,47 @@ var date_human = (year + "-" + month + "-" + day)
 return date_human
 }
 
+// translate pm2.5 to AQI
+function aqiFromPM(pm) {
+    if (isNaN(pm)) return "-";
+    if (pm == undefined) return "-";
+    if (pm < 0) return pm;
+    if (pm > 1000) return "-";
+    /*                                  AQI         RAW PM2.5
+    Good                               0 - 50   |   0.0 – 12.0
+    Moderate                          51 - 100  |  12.1 – 35.4
+    Unhealthy for Sensitive Groups   101 – 150  |  35.5 – 55.4
+    Unhealthy                        151 – 200  |  55.5 – 150.4
+    Very Unhealthy                   201 – 300  |  150.5 – 250.4
+    Hazardous                        301 – 400  |  250.5 – 350.4
+    Hazardous                        401 – 500  |  350.5 – 500.4
+    */
+    if (pm > 350.5) {
+        return calcAQI(pm, 500, 401, 500.4, 350.5); //Hazardous
+    } else if (pm > 250.5) {
+        return calcAQI(pm, 400, 301, 350.4, 250.5); //Hazardous
+    } else if (pm > 150.5) {
+        return calcAQI(pm, 300, 201, 250.4, 150.5); //Very Unhealthy
+    } else if (pm > 55.5) {
+        return calcAQI(pm, 200, 151, 150.4, 55.5); //Unhealthy
+    } else if (pm > 35.5) {
+        return calcAQI(pm, 150, 101, 55.4, 35.5); //Unhealthy for Sensitive Groups
+    } else if (pm > 12.1) {
+        return calcAQI(pm, 100, 51, 35.4, 12.1); //Moderate
+    } else if (pm >= 0) {
+        return calcAQI(pm, 50, 0, 12, 0); //Good
+    } else {
+        return undefined;
+    }
+}
+
+function calcAQI(Cp, Ih, Il, BPh, BPl) {
+    var a = (Ih - Il);
+    var b = (BPh - BPl);
+    var c = (Cp - BPl);
+    return Math.round((a/b) * c + Il);
+}
+
 // load the station data and map it onto the existing projection defined above
 function stations() {
 d3.csv("/aqi/map/stations.csv", function(data) {
@@ -72,7 +123,7 @@ d3.csv("/aqi/map/stations.csv", function(data) {
     .attr("cx", function(d) { var coords = projection([d.longitude, d.latitude]); return coords[0];})
     .attr("cy", function(d) { var coords = projection([d.longitude, d.latitude]); return coords[1];})
     .attr("r", 5)
-    .style("fill", function(d) { var aqi = d.pm2_5_AVG; return colorize(aqi)})
+    .style("fill", function(d) { var aqi = aqiFromPM(d.pm2_5_AVG); return colorize(aqi)})
     .style("stroke", "#2e2e2e")
     .style("stroke-width", "1")
     .on("mouseover", function(d) {
@@ -84,9 +135,10 @@ d3.csv("/aqi/map/stations.csv", function(data) {
     .style("stroke-width","5");
 
     s.raise();
-        var station = d.name; var index = d.station_index; var aqi = d.pm2_5_AVG; var date = d.time_stamp;
+        var station = d.name; var index = d.station_index; var aqi = aqiFromPM(d.pm2_5_AVG); var date = d.time_stamp; var color = colorize(aqi);
         d3.select('#tooltip').transition().duration(200).style('opacity', 1).text(station + " (" + index + ")");
         d3.select('#tooltip2').transition().duration(200).style('opacity', 1).text(time_convert(date));
+//        d3.select('#tooltip3').transition().duration(200).style('opacity', 1).style('color', color).text("AQI: " + aqi); // this colors the AQI, but that's hard to read.
         d3.select('#tooltip3').transition().duration(200).style('opacity', 1).text("AQI: " + aqi);
     })
     .on("mouseout", function (d,i) {
@@ -106,22 +158,22 @@ d3.csv("/aqi/map/stations.csv", function(data) {
 // function to assign AQI colors per EPA's colorscale
 function colorize (aqi) {
 
-    if (aqi < 5) {
+    if (aqi <= 50) {
         color = "green"
         }
-    else if (aqi >= 5 && aqi < 10) {
+    else if (aqi > 50 && aqi <= 100) {
         color = "yellow"
         }
-    else if (aqi >= 10 && aqi < 15) {
+    else if (aqi > 100 && aqi <= 150) {
         color = "orange"
         }
-    else if (aqi >= 15 && aqi < 20) {
+    else if (aqi > 150 && aqi <= 200) {
         color = "red"
         }
-    else if (aqi >= 20 && aqi < 30) {
+    else if (aqi > 200 && aqi <= 300) {
         color = "purple"
         }
-    else if (aqi >= 30 && aqi < 50) {
+    else if (aqi > 300 && aqi <= 500) {
         color = "#800000"
         }
     // I THINK AQIs above 500 are impossible since it's a 0-500 scale, but just in case there's a weird data blurp, make them black.

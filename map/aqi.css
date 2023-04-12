@@ -209,25 +209,25 @@ height:2em;
   max-width:600px;
   margin:0 auto;
 }
+.description {
+max-width:1000px!important;
+  margin:15px auto!important;
+}
+.narrative {
+max-width:1000px!important;
+text-align: justify;
+margin: 20 auto!important;
+}
 @media only screen and (min-width:1501px) {
 #map_container {
 /*    margin-bottom: 30px; */
     display:flex;
     }
 }
-.description {
-max-width:1000px;
-  margin:15px auto;
-}
 .notes {
 max-width:1000px;
 margin-left:auto;
 margin-right:auto;
-}
-.narrative {
-max-width:1000px;
-text-align: justify;
-margin: 20 auto;
 }
 .user_choice {
 margin:0 auto;
