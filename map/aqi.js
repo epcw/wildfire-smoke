@@ -112,8 +112,7 @@ function calcAQI(Cp, Ih, Il, BPh, BPl) {
 
 // attempt to set a slider to handle dates
 const niceFormat = d3.timeFormat("%B %d, %Y");
-const dataFormat = d3.timeFormat("%m-%d-%y"); // MM-DD-YY
-const dataParse = d3.timeParse("%m-%d-%y");
+const dataFormat = d3.timeFormat("%Y-%m-%d"); // MMMM-DD-YY
 
 const startDate = new Date("2017-07-12");
 const millisecondsPerDay = 24 * 60 * 60 * 1000;
