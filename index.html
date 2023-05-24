@@ -244,20 +244,14 @@
 
     <div class="spacer"></div>
     <p class="notes" align="left">instructions go here.</p>
-<!--    <div id="user_inputs">-->
-<!--      <div id="slider" class="user_choice">-->
-<!--        <label for="nVel">Year = <span id="year-value">2021</span>-->
-<!--          <input style="width: 200px;" type="range" min="1950" max="2021" id="year" value="2021" step='1'>-->
-<!--        </label>-->
-<!--      </div>-->
-<!--      <div id="weighting" class="user_choice">-->
-<!--        <h4 align="center">Weighting: <select id="weight" input="dropdown">-->
-<!--            <option value="LR">Linear Extrapolation</option>-->
-<!--            <option value="LAG">30-year simple average</option>-->
-<!--          </select></h4>-->
-<!--      </div>-->
-<!--      <div class="spacer"></div>-->
-<!--    </div>-->
+    <div id="user_inputs">
+      <div class="user_choice">
+        <label for="nVel">Date = <span id="date-value"></span>
+          <input id="slider" style="width: 500px;" type="range" min="0" step="1" value="0" id="date">
+        </label>
+      </div>
+      <div class="spacer"></div>
+    </div>
     <div class="spacer"></div>
     <!-- must be 960x600 to match topojson us atlas files -->
     <div id="map_container">

@@ -110,6 +110,25 @@ function calcAQI(Cp, Ih, Il, BPh, BPl) {
     return Math.round((a/b) * c + Il);
 }
 
+// attempt to set a slider to handle dates
+const niceFormat = d3.timeFormat("%B %d, %Y");
+const dataFormat = d3.timeFormat("%m-%d-%y"); // MM-DD-YY
+const dataParse = d3.timeParse("%m-%d-%y");
+
+const startDate = new Date("2017-07-12");
+const millisecondsPerDay = 24 * 60 * 60 * 1000;
+const lastday = new Date("2023-03-12"); // set manually based on last pull
+const availableDays = (lastday.getTime() - startDate.getTime())/ (1000 * 3600 * 24);
+
+d3.select("#date-value").text(niceFormat(startDate));
+
+d3.select("#slider")
+  .attr("max", availableDays)
+  .on("input", function() {
+    var selected_date = new Date(+startDate + (millisecondsPerDay * this.value));
+    d3.select("#date-value").text(niceFormat(selected_date));
+  });
+
 // load the station data and map it onto the existing projection defined above
 function stations() {
 d3.csv("/aqi/map/stations.csv", function(data) {
@@ -152,6 +171,7 @@ d3.csv("/aqi/map/stations.csv", function(data) {
       d3.select('#tooltip2').style('left', (d3.event.pageX+10) + 'px').style('top', (d3.event.pageY+25) + 'px');
          d3.select('#tooltip3').style('left', (d3.event.pageX+10) + 'px').style('top', (d3.event.pageY+40) + 'px');
      })
+
 });
 }
 
