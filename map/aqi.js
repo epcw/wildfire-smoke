@@ -126,16 +126,26 @@ d3.select("#slider")
   .on("input", function() {
     var selected_date = new Date(+startDate + (millisecondsPerDay * this.value));
     d3.select("#date-value").text(niceFormat(selected_date));
+    // UPDATE LOOP GOES THROUGH HERE FOR THE MAP
+    d3.selectAll(".station_circle").remove();
+    var slice_date = dataFormat(selected_date);
+    stations(slice_date);
   });
 
 // load the station data and map it onto the existing projection defined above
-function stations() {
-d3.csv("/aqi/map/stations.csv", function(data) {
+function stations(slice_date) {
+d3.csv("/aqi/map/station_list.csv", function(data) {
+    console.log(slice_date);
+
+    var dataFilter = data.filter(function(d){ return d.date == slice_date });
+    // create data slice HERE
 
     svg.select("g#stations")
     .append("g")
     .selectAll("dot")
-    .data(data)
+    .attr("class","station_circle")
+    .data(dataFilter)
+//    .data(data)
     .enter()
     .append("circle")
     .attr("cx", function(d) { var coords = projection([d.longitude, d.latitude]); return coords[0];})
@@ -153,9 +163,11 @@ d3.csv("/aqi/map/stations.csv", function(data) {
     .style("stroke-width","5");
 
     s.raise();
-        var station = d.name; var index = d.station_index; var aqi = aqiFromPM(d.pm2_5_AVG); var date = d.time_stamp; var color = colorize(aqi);
+        var station = d.name; var index = d.station_index; var aqi = aqiFromPM(d.pm2_5_AVG); var date = d.date; var color = colorize(aqi);
+//        var station = d.name; var index = d.station_index; var aqi = aqiFromPM(d.pm2_5_AVG); var date = d.time_stamp; var color = colorize(aqi);
         d3.select('#tooltip').transition().duration(200).style('opacity', 1).text(station + " (" + index + ")");
-        d3.select('#tooltip2').transition().duration(200).style('opacity', 1).text(time_convert(date));
+        d3.select('#tooltip2').transition().duration(200).style('opacity', 1).text(date);
+//        d3.select('#tooltip2').transition().duration(200).style('opacity', 1).text(time_convert(date));
 //        d3.select('#tooltip3').transition().duration(200).style('opacity', 1).style('color', color).text("AQI: " + aqi); // this colors the AQI, but that's hard to read.
         d3.select('#tooltip3').transition().duration(200).style('opacity', 1).text("AQI: " + aqi);
     })
@@ -246,7 +258,7 @@ d3.json("/aqi/map/filtered_seattle_contours.json", function(error, puget_sound) 
         .attr("fill","#D6EAFF");
 
     // now add stations: this ensures they get added AFTER the contour map's dimensions are created, since we're mapping the stations onto its lat/lon
-        stations();
+        stations(startDate);
 });
 
 // function to interpolate between two colours

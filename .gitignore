@@ -144,6 +144,7 @@ data/cleaned/*
 /map/seattle_contours.json
 /map/seattle_contours (1).json
 /map/seattle_contours_simplified.json
-/map/stations.csv
+/map/station_list.csv
 /map/filtered_seattle_contours.json
 /data/bak/
+/map/stations_bak.csv

@@ -26,12 +26,23 @@ df_stations_temp = df_stations[['sensor_index','name','latitude','longitude','al
 df_stations_temp = df_stations_temp.rename(columns={"sensor_index": "station_index"})
 df_temp = df[['station_index','time_stamp','pm2.5_AVG']]
 df_temp = df_temp.rename(columns={"pm2.5_AVG": "pm2_5_AVG"}) # this is so D3 doesn't go nuts on the decimal point
-df_temp = df_temp[(df_temp['time_stamp'] > 1672592400) & (df_temp['time_stamp'] < 1672642800)].drop_duplicates()
+df_temp['date'] = pd.to_datetime(df_temp['time_stamp'], unit='s')
+df_temp['date'] = df_temp['date'].dt.date
+df_temp = df_temp.sort_values(by=['date','station_index']) # so you can see the bounds
+df_temp = df_temp.drop('time_stamp', axis=1)
+
+# df_temp = df_temp[(df_temp['time_stamp'] > 1672592400) & (df_temp['time_stamp'] < 1672642800)].drop_duplicates()
 
 # spit out merged datafile for d3, which does not like parquet
 d3_df = df_temp.merge(df_stations_temp, left_on='station_index', right_on='station_index')
-d3_filename = 'map/stations.csv'
-d3_df.to_csv(d3_filename, index=False, quotechar='"', quoting=csv.QUOTE_ALL)
+d3_df.name.replace(',',' ',regex=True,inplace=True)
+
+# additional filtering
+d3_df.drop(d3_df[d3_df['pm2_5_AVG'] >= 600].index, inplace=True)
+d3_df.dropna(subset=['pm2_5_AVG'])
+
+d3_filename = 'map/station_list.csv'
+d3_df.to_csv(d3_filename, index=False, quotechar='"', quoting=csv.QUOTE_NONE)
 
 # wa_shp = gpd.read_file(geo_filename)
 # wa_select_counties = wa_shp[wa_shp['COUNTYFP'].isin(['009','029','031','033','035','045','053','055','057','061','067','073'])] # select only counties within Puget Sound south of Pt Townsend
