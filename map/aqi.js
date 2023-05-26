@@ -118,27 +118,15 @@ const startDate = new Date("2017-07-12");
 const millisecondsPerDay = 24 * 60 * 60 * 1000;
 const lastday = new Date("2023-03-12"); // set manually based on last pull
 const availableDays = (lastday.getTime() - startDate.getTime())/ (1000 * 3600 * 24);
-
+var slice_date = "2017-07-12";
 d3.select("#date-value").text(niceFormat(startDate));
-
-d3.select("#slider")
-  .attr("max", availableDays)
-  .on("input", function() {
-    var selected_date = new Date(+startDate + (millisecondsPerDay * this.value));
-    d3.select("#date-value").text(niceFormat(selected_date));
-    // UPDATE LOOP GOES THROUGH HERE FOR THE MAP
-    d3.selectAll(".station_circle").remove();
-    var slice_date = dataFormat(selected_date);
-    stations(slice_date);
-  });
 
 // load the station data and map it onto the existing projection defined above
 function stations(slice_date) {
 d3.csv("/aqi/map/station_list.csv", function(data) {
-    console.log(slice_date);
+//    console.log(slice_date);
 
-    var dataFilter = data.filter(function(d){ return d.date == slice_date });
-    // create data slice HERE
+    var dataFilter = data.filter(function(d){ return d.date == slice_date });    // create data slice HERE
 
     svg.select("g#stations")
     .append("g")
@@ -258,8 +246,21 @@ d3.json("/aqi/map/filtered_seattle_contours.json", function(error, puget_sound) 
         .attr("fill","#D6EAFF");
 
     // now add stations: this ensures they get added AFTER the contour map's dimensions are created, since we're mapping the stations onto its lat/lon
-        stations(startDate);
+    stations(slice_date);
+
 });
+
+d3.select("#slider")
+  .attr("max", availableDays)
+  .on("input", function() {
+    var selected_date = new Date(+startDate + (millisecondsPerDay * this.value));
+    d3.select("#date-value").text(niceFormat(selected_date));
+    // UPDATE LOOP GOES THROUGH HERE FOR THE MAP
+    d3.selectAll(".station_circle").remove();
+    slice_date = dataFormat(selected_date);
+    stations(slice_date);
+  });
+
 
 // function to interpolate between two colours
 // see http://stackoverflow.com/questions/12217121/continuous-color-scale-from-discrete-domain-of-strings
